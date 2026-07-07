@@ -55,8 +55,11 @@
     flex-shrink:0;box-shadow:0 0 14px rgba(0,0,0,.5);}
   #dlgname{color:var(--gold);font-size:16px;letter-spacing:2px;margin:0 0 2px;}
   #dlgtitle{color:var(--dim);font-size:12px;margin-bottom:6px;}
-  #dlgtext{font-size:14px;line-height:1.9;min-height:60px;white-space:pre-wrap;}
+  #dlgtext{font-size:14px;line-height:1.9;min-height:60px;white-space:pre-wrap;cursor:pointer;}
   #dlgtext .said{display:block;margin-bottom:6px;}
+  #dlgctrl{display:none;gap:8px;align-items:center;margin-top:8px;}
+  #dlgNext{border-color:var(--gold);color:var(--gold);}
+  #dlgpage{color:var(--dim);font-size:12px;letter-spacing:1px;}
   #topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
   .topic{background:#16281f;border:2px solid #4a6a58;color:var(--ink);padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit;}
   .topic:hover{border-color:var(--gold);color:var(--gold);}
@@ -109,7 +112,7 @@
   <div class="sub">— PIXEL MYSTERY／劇本殺式解謎 —</div>
 
   <div id="topbar">
-    <span id="cluecount">線索 0/29</span>
+    <span id="cluecount">線索 0/40</span>
     <div class="btnrow">
       <button class="abtn gray" id="btnNote">📔 筆記本</button>
       <button class="abtn gray" id="btnHint">💡 提示</button>
@@ -135,6 +138,10 @@
         <p id="dlgname"></p>
         <p id="dlgtitle"></p>
         <div id="dlgtext"></div>
+        <div id="dlgctrl">
+          <button class="topic" id="dlgNext" onclick="nextDlgLine()">下一頁 ▶</button>
+          <span id="dlgpage"></span>
+        </div>
       </div>
     </div>
     <div id="topics"></div>
@@ -164,7 +171,7 @@
 法醫初判死因為「嚴重過敏性休克」，死亡時間推定週日 21:00～23:00。
 警方蒐證後陷入膠著，委託你——外部顧問偵探——進入公司調查。
 
-十一名員工，七個場景。
+十二名員工，八個場景。
 在對話中套出證詞，在角落裡翻出物證。
 點擊場景中的閃爍標記，或使用畫面下方的按鈕進行調查。
 收集足夠線索後，即可「指認兇手」。
@@ -212,6 +219,8 @@ const CHARS={
    c:{hair:BK,long:1,bangs:'mid',top:'#7a68a8',dh:0}},
  lin: {name:'林怡安', title:'動畫師｜重度臉盲', loc:'window',
    c:{hair:BR,long:0,bangs:'mid',top:'#c78f45',dh:0}},
+ rickey:{name:'Rickey', title:'產品部總監｜帕恰狗守護者', loc:'roof',
+   c:{hair:BK,long:0,bangs:'mid',top:'#8fb7d8',dh:3,acc:'poc'}},
  boss:{name:'老闆娘', title:'嘉常菜｜情報中心', loc:'rest',
    c:{hair:GRAY,long:0,bangs:'brow',top:'#b13a3a',dh:0,acc:'apron'}},
 };
@@ -339,6 +348,7 @@ const DLG={
    {id:'crush',label:'桌布上的人是……',lines:['「……你看到了。」劉世華以超乎尋常的速度按熄螢幕，速度快到滑鼠差點升天。','「筠喬的側臉有一種聖杯皇后的能量。我只是在做能量紀錄，不是偷拍。請你在筆錄裡寫清楚：是能量。」','「這件事如果傳出去，我會在你的命盤裡加一個倒吊人，備註寫：很愛講。」','你決定尊重她的能量紀錄。']},
    {id:'lighter',label:'妳的打火機在高于雯那裡',cond:s=>s.clues.has('kao_drawer'),clue:'liu_lighter',lines:['「我的儀式用打火機！月初就不見了——黃銅的、刻月亮，淨化牌用的！」','「在高于雯的抽屜裡？跟火種和打火機油放在一起？」','她沉默了兩秒，翻開牌堆最上面一張。','「……牌早就說了。寶劍七，正位：偷竊。」','「我還以為是指羅經理偷貢丸。」']},
    {id:'cam',label:'盆栽裡的鏡頭是……',cond:s=>s.clues.has('spycam'),clue:'liu_cam',lines:['「那是能量紀錄裝置！！」','她按熄螢幕的速度，快到滑鼠差點升天。','「好。是我裝的。角度只對著筠喬的座位，我發誓，鏡頭連走道都拍不到——」','「等等。」她突然停住，翻出記憶卡。「週日晚上……感應燈有亮過。」','畫面裡整晚都是空椅子；21:39，燈亮，畫面「邊緣」掠過一道不矮的影子——背光，沒有臉。（應該不是小小兵們）','「請不要告訴筠喬。拜託。我可以幫你免費占卜十年。」']},
+   {id:'rickey',label:'頂樓聊天的人',lines:['「Rickey？產品部總監。跟羅經理不熟，跟帕恰狗比較熟。」','「我們偶爾去頂樓偷偷聊天。嚴格來說不是偷偷，是大家沒空管我們。」','「我講塔羅，他講 Roadmap；兩個領域都一樣，抽到壞牌就延期。」','「他說帕恰狗是產品哲學。我說這是太陽牌正位。他說謝謝，但他只是想買吊飾。」']},
    {id:'odd',label:'有注意到異狀嗎',lines:['「羅經理座位上方的磁場，最近很混濁。」','「而且他最近一直把文件夾壓在咖啡杯下面。這不是磁場問題，這是辦公室衛生問題。」','你等了一下。她很認真地補充：「咖啡杯是逆位。」']},
  ]},
  lin:{greet:['「你是……誰？」林怡安瞇起眼睛。','「抱歉，我臉盲。除非是亭宇女明星那種等級的臉，不然我存不進記憶體。」'],
@@ -348,7 +358,14 @@ const DLG={
    {id:'feature',label:'最近有看到誰在吵架嗎？',cond:s=>s.clues.has('witness_lin'),lines:['「沒有耶」她認真地想。「我都在趕動畫==。」','「而且我現在能確定的只有：那個人不是Ellen。Ellen的臉我會記得，永久置頂。」','你覺得這個人好像無法信任。']},
    {id:'face',label:'關於臉盲',lines:['「Ellen的臉，是唯一存進我記憶體的檔案。」','她一臉虔誠。「無損格式。」']},
  ]},
- boss:{greet:['「唉唷，調查員！」老闆娘在圍裙上抹抹手。','「羅經理的事我聽說了……造孽喔。坐，滷肉飯算你八折。」'],
+ rickey:{greet:['「欸，調查員，頂樓風很大，你證據有沒有壓好？」','Rickey 把帕恰狗吊飾塞回口袋，假裝那不是剛才第一個被風吹走的東西。'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日晚上我在家整理產品 Roadmap。」','「不要問為什麼週日晚上整理 Roadmap，產品部的人生就是這樣。」','「十一點後我在看帕恰狗周邊開箱直播，信用卡可以作證。」']},
+   {id:'victim',label:'跟羅本添熟嗎',lines:['「不熟。產品部跟業務部的交集很薄，薄到像免費試用版。」','「他偶爾會拿需求來問，但通常問完就丟給別人處理。很會催，很會說『這個應該很快吧』。」','「我對他的印象？常預約小會議室、很愛看報表、完全不像會喜歡帕恰狗的人。」']},
+   {id:'liu',label:'和劉世華來頂樓？',lines:['「噓，小聲一點。那叫跨部門情緒避難，不叫偷偷聊天。」','「她會上來講牌，我會上來講產品，最後兩個人一起沉默看招牌。」','「她最近提過高塔牌不見了，語氣像遺失身分證。但我以為她只是塔羅界日常崩潰。」']},
+   {id:'poc',label:'帕恰狗？',lines:['「帕恰狗不是興趣，是一種產品哲學：功能要可愛，流程要短，眼神要無辜。」','「我本來想把產品部週報改成帕恰狗主題，被孫寧用眼神退件。」','「她沒說不行，但她看我的那一眼，已經完成主管審核。」']},
+ ]},
+  boss:{greet:['「唉唷，調查員！」老闆娘在圍裙上抹抹手。','「羅經理的事我聽說了……造孽喔。坐，滷肉飯算你八折。」'],
   topics:[
    {id:'victim',label:'關於羅經理',clue:'allergy_known',lines:['「老客人了。但他不能吃花生！有一次乾麵不小心放了花生粉，整張臉腫起來，當場休克——」','「還好他包包裡有一支急救筆，自己往大腿一戳才救回來。從那次之後，他的單子全部備註『不要花生』。」','「那天同桌的是你們公司幾位主管。孫總監、吳副理、葉主任——都嚇壞了，親眼看到的。」']},
    {id:'friday',label:'週五晚上的客人',clue:'peanut_buy',lines:['「週五喔……有人外帶滷味，多拿了五包花生粉。」','「我原本以為是葉主任那組常點的單，因為內容一模一樣。」','「但巷口那天燈壞掉，臉我不敢保證。只覺得那人講話很冷靜，像在處理工作，不像在買宵夜。」']},
@@ -403,18 +420,25 @@ const SCENES={
    {id:'note_scraps',x:28,y:132,w:80,h:12,label:'洗手台下方縫隙'},
    {id:'glove',x:150,y:162,w:20,h:26,label:'垃圾桶'},
   ]},
+ roof:{label:'頂樓',chars:[{id:'rickey',x:128}],
+  objs:[
+   {id:'roof_chairs',x:220,y:146,w:70,h:24,label:'兩張塑膠椅',custom:'roofchairs'},
+   {id:'pocchaco_charm',x:126,y:150,w:20,h:20,label:'帕恰狗吊飾',custom:'pocchaco'},
+  ]},
  rest:{label:'嘉常菜',chars:[{id:'boss',x:150,fy:160}],
   objs:[
    {id:'menu_board',x:140,y:36,w:120,h:52,label:'菜單板'},
    {id:'peanut_counter',x:216,y:124,w:24,h:14,label:'花生粉自取區'},
   ]},
 };
-const SCENE_ORDER=['window','office2','sales','meet_s','meet_b','toilet','rest'];
+const SCENE_ORDER=['window','office2','sales','meet_s','meet_b','toilet','roof','rest'];
 
 /* 特殊物件（沒有直接對應線索卡） */
 const CUSTOM_OBJ={
  tarotbox:{t:'塔羅牌盒',x:'劉世華的塔羅牌盒。盒標寫著「78 張」。\n你數了一下——77 張。\n少的那張是……也許該問問牌的主人。'},
  salesboard:{t:'業績白板',x:'業績排行榜：羅本添的名字霸佔榜首七個月。\n旁邊被人用極小的字寫著——「呵」。'},
+ roofchairs:{t:'頂樓塑膠椅',x:'兩張塑膠椅靠在水塔旁。\n一張椅背貼著「Roadmap 不要掉下去」，另一張貼著「高塔不是高樓」。\n看來有人常來這裡進行跨部門情緒避難。'},
+ pocchaco:{t:'帕恰狗吊飾',x:'一枚帕恰狗吊飾卡在頂樓門縫邊。\n與案情無關，但與 Rickey 的精神穩定高度相關。\n如果這是劇本殺線索，那它大概是可愛擔當。'},
 };
 </script>
 <script>
@@ -439,6 +463,7 @@ function drawChar(c,cx,fy,ch){
   R(c,ch.top,cx-6,ty,12,torso);
   if(ch.acc==='apron'){R(c,'#efe8dc',cx-4,ty+2,8,torso-3);}
   if(ch.acc==='puff'){R(c,'#7fd35a',cx-1,ty+2,3,3);}
+  if(ch.acc==='poc'){R(c,'#f5f2e8',cx-3,ty+2,6,5);R(c,'#20202a',cx-4,ty+3,2,2);R(c,'#20202a',cx+2,ty+3,2,2);R(c,'#57d7c9',cx-1,ty+6,2,1);}
   R(c,SKIN,cx-5,hy,10,headH);
   R(c,ch.hair,cx-6,hy-2,12,3);
   R(c,ch.hair,cx-6,hy+1,1,3);R(c,ch.hair,cx+5,hy+1,1,3);
@@ -633,7 +658,25 @@ const DRAW={
   R(c,'#3c5a4c',320,34,2,20);
   lamp(c,150,22);
  },
- rest(c){
+ roof(c){
+  R(c,'#07100d',0,0,400,225);
+  R(c,'#0d1c2c',0,0,400,140);
+  c.fillStyle='#cfe6ff';
+  for(let i=0;i<24;i++)c.fillRect((i*37)%390+5,(i*19)%70+14,1,1);
+  c.fillStyle='#102737';
+  for(let i=0;i<400;i+=24){const bh=24+((i*7)%46);R(c,'#102737',i,140-bh,20,bh);R(c,'#ffd98a',i+6,132-bh/2,2,2);}
+  R(c,'#2c3d3f',0,138,400,12);
+  for(let x=8;x<400;x+=22)R(c,'#5d7478',x,126,4,42);
+  R(c,'#5d7478',0,126,400,4);R(c,'#5d7478',0,148,400,4);
+  R(c,'#30363a',0,170,400,30);R(c,'#22282c',0,198,400,27);
+  c.fillStyle='rgba(0,0,0,0.18)';for(let x=0;x<400;x+=40)c.fillRect(x,170,1,55);
+  R(c,'#26383a',286,100,52,56);R(c,'#1c2c2e',282,96,60,8);R(c,'#3c5a4c',300,112,24,18);
+  R(c,'#8a5a34',220,154,32,8);R(c,'#2e2016',224,162,4,16);R(c,'#2e2016',244,162,4,16);
+  R(c,'#8a5a34',258,154,32,8);R(c,'#2e2016',262,162,4,16);R(c,'#2e2016',282,162,4,16);
+  R(c,'#f5f2e8',132,158,10,8);R(c,'#20202a',130,160,2,2);R(c,'#20202a',140,160,2,2);R(c,'#57d7c9',136,165,3,1);
+  glow(c,160,118,34,'#57d7c9');
+ },
+  rest(c){
   roomBase(c,'#3a2a24',170,'#2c2018');
   const lant=(x)=>{R(c,'#c23b30',x-6,28,12,14);R(c,'#ffc46a',x-6,26,12,2);R(c,'#ffc46a',x-6,42,12,2);
     R(c,'#8a2a20',x-1,44,2,4);glow(c,x,36,18,'#ff9a5a');R(c,'#0a0f0d',x-1,10,2,16);};
@@ -750,17 +793,54 @@ function modalOpen(){return $('modalbg').style.display==='flex';}
 $('modalbg').addEventListener('click',e=>{if(e.target===$('modalbg'))closeModal();});
 
 /* ---- dialogue ---- */
+let dlgState={lines:[],idx:0,clue:null,clueAdded:false};
+function escHTML(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function openDlg(id){
   curChar=id;
   const C=CHARS[id];
   drawPortrait($('portrait'),C.c);
   $('dlgname').textContent=C.name;
   $('dlgtitle').textContent=C.title;
-  $('dlgtext').innerHTML=DLG[id].greet.map(l=>'<span class="said">'+l+'</span>').join('');
-  buildTopics();
   $('dlg').style.display='block';
+  setDlgSequence(DLG[id].greet||[]);
   $('dlg').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+function setDlgSequence(lines,opts={}){
+  dlgState={lines:[...(lines||[])],idx:0,clue:opts.clue||null,clueAdded:false};
+  $('topics').style.display='none';
+  showDlgLine();
+}
+function showDlgLine(){
+  const lines=dlgState.lines.length?dlgState.lines:['……'];
+  const atEnd=dlgState.idx>=lines.length-1;
+  let html='<span class="said">'+escHTML(lines[dlgState.idx]||'')+'</span>';
+  if(atEnd&&dlgState.clue){
+    const cl=CLUES[dlgState.clue];
+    let isNew=false;
+    if(!dlgState.clueAdded){isNew=addClue(dlgState.clue,true);dlgState.clueAdded=true;}else{isNew=!S.clues.has(dlgState.clue);}
+    html+='<span class="cluetag">'+(cl.k?'☆':'◆')+' 新線索：'+escHTML(cl.t)+(isNew?'':'（已記錄）')+'</span>';
+  }
+  $('dlgtext').innerHTML=html;
+  $('dlgpage').textContent=(dlgState.idx+1)+' / '+lines.length;
+  if(atEnd){
+    $('dlgctrl').style.display='none';
+    $('topics').style.display='flex';
+    buildTopics();
+    updateTop();
+  }else{
+    $('dlgctrl').style.display='flex';
+    $('topics').style.display='none';
+  }
+}
+function nextDlgLine(){
+  if($('dlg').style.display!=='block')return;
+  if(!dlgState.lines.length)return;
+  if(dlgState.idx<dlgState.lines.length-1){
+    dlgState.idx++;
+    showDlgLine();
+  }
+}
+$('dlgtext').addEventListener('click',nextDlgLine);
 function buildTopics(){
   const id=curChar, box=$('topics');let h='';
   for(const t of DLG[id].topics){
@@ -775,16 +855,14 @@ function askTopic(tid){
   if(!t)return;
   S.flags['asked_'+id+'_'+tid]=1;
   if(t.flag)S.flags[t.flag]=1;
-  let html=t.lines.map(l=>'<span class="said">'+l+'</span>').join('');
-  if(t.clue){
-    const isNew=addClue(t.clue,true);
-    const cl=CLUES[t.clue];
-    html+='<span class="cluetag">'+(cl.k?'☆':'◆')+' 新線索：'+cl.t+(isNew?'':'（已記錄）')+'</span>';
-  }
-  $('dlgtext').innerHTML=html;
-  buildTopics();updateTop();
+  setDlgSequence(t.lines||[],{clue:t.clue||null});
 }
-function closeDlg(){$('dlg').style.display='none';curChar=null;}
+function closeDlg(){
+  $('dlg').style.display='none';
+  $('dlgctrl').style.display='none';
+  $('topics').style.display='flex';
+  curChar=null;
+}
 
 /* ---- notebook ---- */
 const CATS=['案情','現場','物證','證詞','雜項'];
