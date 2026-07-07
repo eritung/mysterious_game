@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>辦公室離奇命案：貢丸湯之謎</title>
+<style>
+  :root{
+    --bg:#0b1411; --panel:#122019; --panel2:#0e1a15; --line:#3c5a4c;
+    --ink:#d8e6dc; --dim:#8fa89a; --gold:#ffc46a; --teal:#57d7c9; --red:#e06a5a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:"Cubic11","Zpix","Microsoft JhengHei","PingFang TC",sans-serif;}
+  #wrap{max-width:920px;margin:0 auto;padding:10px 10px 40px;}
+  h1.title{font-size:18px;letter-spacing:2px;color:var(--gold);margin:8px 0 2px;text-align:center;
+    text-shadow:0 0 12px rgba(255,196,106,.35);}
+  .sub{text-align:center;color:var(--dim);font-size:12px;margin-bottom:8px;letter-spacing:1px;}
+  /* pixel panel */
+  .panel{background:var(--panel);border:3px solid var(--line);box-shadow:0 0 0 3px #071008, inset 0 0 0 2px #071008;
+    padding:10px;image-rendering:pixelated;}
+  #navbar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0;}
+  .navbtn{background:var(--panel2);border:2px solid var(--line);color:var(--dim);padding:6px 9px;font-size:13px;
+    cursor:pointer;font-family:inherit;letter-spacing:1px;}
+  .navbtn.active{color:var(--gold);border-color:var(--gold);background:#1c2b1f;box-shadow:0 0 8px rgba(255,196,106,.25);}
+  .navbtn:hover{color:var(--ink);}
+  #stage{position:relative;width:100%;}
+  #cv{width:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges;
+    border:3px solid var(--line);box-shadow:0 0 0 3px #071008, 0 0 30px rgba(0,0,0,.6);background:#000;cursor:crosshair;}
+  #scenename{position:absolute;top:8px;left:8px;background:rgba(7,16,10,.8);border:2px solid var(--line);
+    color:var(--teal);font-size:13px;padding:3px 8px;letter-spacing:2px;pointer-events:none;}
+  #topbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;margin:8px 0;}
+  #cluecount{color:var(--gold);font-size:13px;letter-spacing:1px;}
+  .btnrow{display:flex;gap:6px;flex-wrap:wrap;}
+  .abtn{background:#1c2b1f;border:2px solid var(--gold);color:var(--gold);padding:6px 12px;font-size:13px;cursor:pointer;
+    font-family:inherit;letter-spacing:1px;}
+  .abtn.gray{border-color:var(--line);color:var(--dim);}
+  .abtn:disabled{opacity:.4;cursor:not-allowed;}
+  .abtn.red{border-color:var(--red);color:var(--red);}
+  /* action chips under canvas */
+  #actions{margin-top:8px;}
+  .actgroup{margin:6px 0;}
+  .actlabel{color:var(--dim);font-size:12px;letter-spacing:2px;margin-bottom:4px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{background:var(--panel2);border:2px solid var(--line);color:var(--ink);padding:5px 10px;font-size:13px;
+    cursor:pointer;font-family:inherit;}
+  .chip:hover{border-color:var(--teal);color:var(--teal);}
+  .chip.done{color:var(--dim);border-style:dashed;}
+  .chip.talk{border-color:#5d7a8f;}
+  .chip.talk:hover{border-color:var(--teal);}
+  /* dialog panel */
+  #dlg{display:none;margin-top:10px;}
+  #dlghead{display:flex;gap:12px;align-items:flex-start;}
+  #portrait{width:110px;height:120px;image-rendering:pixelated;border:3px solid var(--line);background:#12241d;
+    flex-shrink:0;box-shadow:0 0 14px rgba(0,0,0,.5);}
+  #dlgname{color:var(--gold);font-size:16px;letter-spacing:2px;margin:0 0 2px;}
+  #dlgtitle{color:var(--dim);font-size:12px;margin-bottom:6px;}
+  #dlgtext{font-size:14px;line-height:1.9;min-height:60px;white-space:pre-wrap;}
+  #dlgtext .said{display:block;margin-bottom:6px;}
+  #topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .topic{background:#16281f;border:2px solid #4a6a58;color:var(--ink);padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit;}
+  .topic:hover{border-color:var(--gold);color:var(--gold);}
+  .topic.newmark{border-color:var(--gold);}
+  .topic.asked{color:var(--dim);border-style:dashed;}
+  .closex{background:none;border:2px solid var(--line);color:var(--dim);cursor:pointer;padding:4px 10px;font-family:inherit;float:right;font-size:12px;}
+  .cluetag{display:inline-block;background:#2a2113;border:2px solid var(--gold);color:var(--gold);font-size:12px;
+    padding:3px 8px;margin-top:8px;letter-spacing:1px;}
+  /* modal */
+  #modalbg{display:none;position:fixed;inset:0;background:rgba(4,10,7,.82);z-index:50;
+    align-items:center;justify-content:center;padding:14px;}
+  #modal{max-width:640px;width:100%;max-height:82vh;overflow-y:auto;}
+  #modal h3{color:var(--gold);letter-spacing:2px;margin:0 0 8px;font-size:16px;}
+  #modal .body{font-size:14px;line-height:1.9;white-space:pre-wrap;}
+  .keymark{color:var(--gold);}
+  /* notebook list */
+  .nb-item{border-bottom:1px dashed var(--line);padding:8px 2px;}
+  .nb-item b{color:var(--teal);font-size:13px;}
+  .nb-item.keyc b{color:var(--gold);}
+  .nb-item p{margin:4px 0 0;color:var(--ink);font-size:13px;line-height:1.8;}
+  .nb-cat{color:var(--dim);font-size:11px;letter-spacing:2px;margin:12px 0 2px;border-left:3px solid var(--line);padding-left:6px;}
+  /* accuse */
+  .suspects{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:8px 0;}
+  .sus{background:var(--panel2);border:2px solid var(--line);padding:6px;cursor:pointer;text-align:center;font-size:12px;color:var(--ink);font-family:inherit;}
+  .sus canvas{width:66px;height:72px;image-rendering:pixelated;display:block;margin:0 auto 4px;}
+  .sus.sel{border-color:var(--red);box-shadow:0 0 10px rgba(224,106,90,.4);}
+  .optlist{display:flex;flex-direction:column;gap:6px;margin:8px 0;}
+  .opt{background:var(--panel2);border:2px solid var(--line);padding:8px;font-size:13px;cursor:pointer;text-align:left;color:var(--ink);line-height:1.6;font-family:inherit;}
+  .opt.sel{border-color:var(--red);color:#ffd9d3;}
+  .steplabel{color:var(--red);letter-spacing:2px;font-size:13px;margin-top:12px;}
+  /* intro / ending overlays */
+  .fullov{display:none;position:fixed;inset:0;background:rgba(4,10,7,.94);z-index:60;overflow-y:auto;padding:20px 14px;}
+  .fullin{max-width:680px;margin:0 auto;}
+  .fullin h2{color:var(--gold);letter-spacing:3px;text-align:center;font-size:22px;text-shadow:0 0 16px rgba(255,196,106,.4);}
+  .fullin .story{font-size:14px;line-height:2;white-space:pre-wrap;}
+  .center{text-align:center;margin-top:16px;}
+  .blink{animation:bk 1.1s steps(2) infinite;}
+  @keyframes bk{50%{opacity:.25}}
+  #hinttip{color:var(--teal);font-size:12px;margin-top:6px;display:none;line-height:1.7;}
+  @media(max-width:560px){
+    #dlghead{gap:8px}
+    #portrait{width:84px;height:92px}
+    h1.title{font-size:15px}
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1 class="title">◆ 辦公室離奇命案：貢丸湯之謎 ◆</h1>
+  <div class="sub">— PIXEL MYSTERY／劇本殺式解謎 —</div>
+
+  <div id="topbar">
+    <span id="cluecount">線索 0/29</span>
+    <div class="btnrow">
+      <button class="abtn gray" id="btnNote">📔 筆記本</button>
+      <button class="abtn gray" id="btnHint">💡 提示</button>
+      <button class="abtn red" id="btnAccuse" disabled>⚖ 指認兇手</button>
+    </div>
+  </div>
+  <div id="hinttip"></div>
+
+  <div id="navbar"></div>
+
+  <div id="stage">
+    <canvas id="cv" width="400" height="225"></canvas>
+    <div id="scenename"></div>
+  </div>
+
+  <div id="actions"></div>
+
+  <div id="dlg" class="panel">
+    <button class="closex" onclick="closeDlg()">✕ 離開對話</button>
+    <div id="dlghead">
+      <canvas id="portrait" width="110" height="120"></canvas>
+      <div style="flex:1;min-width:0">
+        <p id="dlgname"></p>
+        <p id="dlgtitle"></p>
+        <div id="dlgtext"></div>
+      </div>
+    </div>
+    <div id="topics"></div>
+  </div>
+
+  <div id="modalbg">
+    <div id="modal" class="panel">
+      <button class="closex" onclick="closeModal()">✕ 關閉</button>
+      <h3 id="mtitle"></h3>
+      <div class="body" id="mbody"></div>
+    </div>
+  </div>
+
+  <div class="fullov" id="intro">
+    <div class="fullin">
+      <h2>◆ 辦公室離奇命案 ◆</h2>
+      <p style="text-align:center;color:var(--teal);letter-spacing:3px;font-size:13px">— 貢丸湯之謎 —</p>
+      <div class="panel story" style="margin-top:14px">週一早上 08:50，廣告公司「艾迪創意」的小會議室裡，
+業務部經理 羅本添（45 歲）被發現趴倒在會議桌上，早已死亡多時。
+
+現場離奇得像一場惡劣的玩笑——
+　◆ 冷氣被調到 16 度，會議室冷得像冰庫
+　◆ 投影機循環播放著「Q3 業績報告」，不知播了幾百遍
+　◆ 他手裡抓著半顆貢丸，桌上一碗喝到一半的貢丸湯
+　◆ 一張塔羅牌「高塔」，端正地擺在桌面
+
+法醫初判死因為「嚴重過敏性休克」，死亡時間推定週日 21:00～23:00。
+警方蒐證後陷入膠著，委託你——外部顧問偵探——進入公司調查。
+
+十名員工，七個場景。
+在對話中套出證詞，在角落裡翻出物證。
+點擊場景中的閃爍標記，或使用畫面下方的按鈕進行調查。
+收集足夠線索後，即可「指認兇手」。
+
+真相，就藏在這間公司的日常裡。</div>
+      <div class="center"><button class="abtn" style="font-size:16px;padding:10px 26px" onclick="startGame()">▶ 開始調查</button></div>
+    </div>
+  </div>
+
+  <div class="fullov" id="ending">
+    <div class="fullin">
+      <h2 id="endtitle"></h2>
+      <div class="panel story" id="endbody" style="margin-top:14px"></div>
+      <div class="center">
+        <button class="abtn" id="endbtn" onclick="endAction()">返回調查</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const SKIN='#eac396', BR='#7a5230', BK='#23232b', GRAY='#9a9aa2';
+
+const CHARS={
+ sun: {name:'孫寧', title:'總監｜冷靜的 T 人', loc:'meet_b',
+   c:{hair:BR,long:0,bangs:'mid',top:'#aeb8bd',dh:0,acc:'puff'}},
+ wu:  {name:'吳冠瑩', title:'副理｜勇猛的 E 人（怕鳥）', loc:'sales',
+   c:{hair:BR,long:1,bangs:'mid',top:'#c9705b',dh:1}},
+ yeh: {name:'葉詩宣', title:'主任｜身高很高的 T 人', loc:'sales',
+   c:{hair:BR,long:0,bangs:'air',top:'#8fa3bd',dh:4}},
+ tung:{name:'董伊淇', title:'專案經理｜即將離職・飲料成癮', loc:'rest',
+   c:{hair:BR,long:1,bangs:'air',top:'#e3decf',dh:0,acc:'cup'}},
+ kao: {name:'高于雯', title:'專案經理｜小小兵・人狠話不多', loc:'office2',
+   c:{hair:BK,long:0,bangs:'brow',top:'#d9a63c',dh:-4}},
+ cty: {name:'陳亭宇', title:'專案經理｜美到業務不敢說話', loc:'office2',
+   c:{hair:BK,long:1,bangs:'mid',top:'#93465a',dh:1}},
+ peng:{name:'彭筠喬', title:'網頁設計師｜小小兵・周子瑜守護者', loc:'office2',
+   c:{hair:BK,long:0,bangs:'air',top:'#4d82c4',dh:-3,crop:1}},
+ cth: {name:'陳資涵', title:'動畫師｜貢丸世家（肉是溫體豬）', loc:'window',
+   c:{hair:BR,long:0,bangs:'air',top:'#5f8f63',dh:0}},
+ liu: {name:'劉世華', title:'動畫師｜塔羅占卜・喜歡彭筠喬', loc:'window',
+   c:{hair:BK,long:1,bangs:'mid',top:'#7a68a8',dh:0}},
+ lin: {name:'林怡安', title:'動畫師｜重度臉盲', loc:'window',
+   c:{hair:BR,long:0,bangs:'mid',top:'#c78f45',dh:0}},
+ boss:{name:'老闆娘', title:'嘉常菜｜情報中心', loc:'rest',
+   c:{hair:GRAY,long:0,bangs:'brow',top:'#b13a3a',dh:0,acc:'apron'}},
+};
+
+const CLUES={
+ brief:{k:1,cat:'案情',t:'案情簡報',x:'死者：業務部經理 羅本添（45 歲）。週一 08:50 由吳冠瑩副理發現陳屍於小會議室。\n法醫初判：嚴重過敏性休克（花生類過敏原）。\n死亡時間推定週日 21:00～23:00——但現場冷氣被調至 16 度，低溫使推定範圍擴大。\n警方保留現場，委託你進行調查。'},
+ scene_body:{k:1,cat:'現場',t:'屍體狀況',x:'羅本添趴倒在會議桌上，右手還抓著半顆貢丸。掙扎痕跡集中在桌面：文件散落、椅子翻倒。\n手機掉在腳邊，螢幕停在通訊錄——他發作時想求救，卻沒能撥出去。\n外套內袋裡有一個「空的」筆型收納套。'},
+ soup_bowl:{k:1,cat:'現場',t:'那碗貢丸湯',x:'桌上有一碗喝到一半的貢丸湯，早已乾涸。\n碗緣沾著大量細粉狀殘渣——化驗結果：高濃度花生粉。\n貢丸表面的裂縫裡也被揉進了花生粉，煮湯後全數釋出。\n這絕對不是「不小心沾到」的量。'},
+ tarot_card:{k:0,cat:'現場',t:'高塔牌',x:'一張塔羅牌「高塔」端正地放在桌面上。\n詭異的是——牌壓在「已經乾掉」的湯漬上方，牌背卻乾乾淨淨。\n也就是說：這張牌是在湯灑出、甚至乾掉之後，才被「放」上去的。\n死者死後，有人回到過現場。'},
+ ac_remote:{k:0,cat:'現場',t:'16 度的冷氣',x:'冷氣遙控器放在桌上：16 度、風速最強。\n羅本添出了名的怕冷，夏天都披著外套，不可能是他自己調的。\n低溫會延緩屍體變化——有人想混淆死亡時間。'},
+ projector:{k:0,cat:'現場',t:'循環播放的簡報',x:'投影機還在運轉，循環播放「Q3 業績報告.pptx」。\n檔案最後儲存時間：週日 21:26。\n也就是說，21:26 之後不久，他就端起了那碗湯。'},
+ door_log:{k:1,cat:'現場',t:'門禁紀錄',x:'小會議室門禁紀錄（只記錄「進入」，離開免刷卡）：\n　週日 21:15　羅本添\n　週日 21:41　董伊淇\n　週一 08:50　吳冠瑩\n——但董伊淇的門禁卡，早在週五下午就掛失了。'},
+ fridge_bag:{k:1,cat:'物證',t:'被動過的貢丸袋',x:'冷凍庫裡是陳資涵家寄來的貢丸。她週五因謠言氣到把每一袋「封箱夾好」。\n現在其中一袋被打開又重新夾上——夾子方向與她的強迫症習慣相反。\n袋內貢丸表面附著細粉。化驗：花生粉。'},
+ microwave:{k:0,cat:'物證',t:'微波爐的湯漬',x:'微波爐與電湯匙上有週日晚間留下的新鮮湯漬。\n羅本添加班必煮貢丸湯——連同「擅自偷拿別人家貢丸」這件事，全公司無人不知。'},
+ trash_peanut:{k:1,cat:'物證',t:'五個花生粉空包',x:'茶水間垃圾桶深處：五個撕開的「花生粉」小包裝，印著「嘉常菜」的紅色標誌。\n嘉常菜的花生粉是給客人配豬血糕用的……\n而羅本添對花生嚴重過敏，這件事嘉常菜全店都知道。'},
+ tung_desk:{k:1,cat:'物證',t:'遺失卡申請單',x:'董伊淇桌上：離職交接文件、七個手搖杯疊成的塔，以及——\n「門禁卡遺失補發申請單」，填寫時間：週五 14:20，總務已蓋收件章。\n她的卡在案發前兩天就不見了。有人偷走了它。'},
+ whiteboard_review:{k:1,cat:'物證',t:'升等審查會',x:'大會議室白板的本週議程：\n「週一 09:30——主管升等審查會：葉詩宣（主任 → 副理）」\n命案發生在審查會前一晚。屍體被發現時，距離開會只剩四十分鐘。'},
+ epipen_cabinet:{k:1,cat:'物證',t:'高櫃頂的急救筆',x:'大會議室的高櫃（約 210 公分）頂端深處，藏著一支腎上腺素自動注射筆——羅本添的救命針。\n櫃頂積灰上只有一道「伸手放置」的細長痕跡；地面與椅面都沒有踩踏痕跡。\n不必墊任何東西就搆得到這個高度的人……全公司沒幾個。'},
+ glove:{k:0,cat:'物證',t:'單只手套',x:'女廁垃圾桶：一只橡膠手套，內側沾著乾掉的湯漬與細粉。\n只有一只——另一只可能被帶走或沖掉了。\n兇手佈置現場時，戴著它。'},
+ note_scraps:{k:1,cat:'物證',t:'勒索字條殘片',x:'洗手台下方縫隙卡著幾片沒被沖走的紙條殘片，拼起來：\n「……最後一次調整：每月15號前……10萬。\n不然評審會那天……資料會出現在所有人的信箱……」\n有人急著在女廁把它撕碎沖掉。'},
+ ledger:{k:1,cat:'物證',t:'私人記帳本',x:'羅本添抽屜深處的記帳本，同一項目連續七個月：\n「Y ＋50,000／每月 15 日」\n他每個月固定向某個「Y」收取五萬元。\nY——葉詩宣（Yeh）？還是……董伊淇（Yi-Chi）？'},
+ leak_draft:{k:1,cat:'物證',t:'外洩調查草稿',x:'羅本添桌上文件夾裡的草稿：\n「本公司報價連續七次遭『新視界廣告』以 0.5% 差距擊敗。\n報價單完整權限僅三人：孫寧、吳冠瑩、葉詩宣。」\n草稿旁貼著便利貼：「不必上報。另有用途。」\n——他查到了內鬼，卻選擇拿來牟利。'},
+ epipen_pouch:{k:1,cat:'物證',t:'空的醫藥袋',x:'羅本添的側背包裡有個醫藥收納袋——是空的。\n袋內附處方籤影本：「腎上腺素自動注射筆 ×2（家中、辦公室各備一支）」。\n他放在辦公室的救命針，在案發前就被人拿走了。'},
+ peanut_counter:{k:0,cat:'物證',t:'嘉常菜的花生粉',x:'嘉常菜櫃檯上放著自取的花生粉小包，紅色標誌——\n與茶水間垃圾桶裡的五個空包，完全相同。'},
+ render_log:{k:0,cat:'物證',t:'渲染紀錄',x:'林怡安的工作站紀錄：週日 20:02～23:14 持續渲染動畫。\n她整晚都在公司——她是案發時段唯一在場的活人。'},
+ witness_lin:{k:1,cat:'證詞',t:'林怡安的目擊',x:'週日 21:45 左右，林怡安去茶水間裝水，看見一個「很高、棕色短髮、穿襯衫」的人從小會議室方向快步走向女廁。\n之後女廁的水聲響了很久。\n她臉盲認不出是誰——但確定「比我高半顆頭以上」（她 167 公分）。'},
+ witness_ty:{k:0,cat:'證詞',t:'陳亭宇的目擊',x:'週五傍晚，陳亭宇看見一個「高高的、短髮」的人在冷凍庫前站了很久。\n她以為又是有人偷吃貢丸，沒有多想。'},
+ allergy_known:{k:1,cat:'證詞',t:'誰知道他過敏',x:'老闆娘證詞：羅本添對花生嚴重過敏，曾在店內誤食當場休克，靠急救筆自救。\n當時同桌親眼目睹的，是公司三位主管——\n孫寧、吳冠瑩、葉詩宣。'},
+ peanut_buy:{k:1,cat:'證詞',t:'五包花生粉',x:'老闆娘證詞：週五晚上，葉詩宣外帶滷味時多要了「五包」花生粉，說是「同事要配豬血糕」。\n老闆娘印象深刻——因為葉詩宣平常根本不吃豬血糕。'},
+ concert_date:{k:1,cat:'證詞',t:'演唱會在週六',x:'彭筠喬（資深追星情報網）證實：金聖圭的線上演唱會辦在「週六」晚上，週日根本沒有場次，也沒有官方重播。\n葉詩宣宣稱的不在場證明——「週日晚上看金聖圭線上演唱會」——不成立。'},
+ yeh_lie:{k:1,cat:'證詞',t:'葉詩宣的破綻',x:'被指出日期矛盾後，葉詩宣改口稱看的是「重播」——但線上演唱會並無官方重播。\n她的手指在桌面上不自覺地敲了兩下。\n這是她第一次露出破綻。'},
+ tarot_reading:{k:0,cat:'證詞',t:'高塔的占卜',x:'劉世華證詞：上上週，葉詩宣私下請她占卜，問題是——\n「如果有人擋在你必須走的路上，怎麼辦？」\n抽到的牌，正是「高塔」。\n而週五下午，她牌組裡的高塔牌不見了。'},
+ stair_argument:{k:0,cat:'證詞',t:'樓梯間的爭執',x:'吳冠瑩證詞：週五下班時，羅本添和葉詩宣在樓梯間爭執，氣氛很僵。\n她只聽到一句——「最後一次。」'},
+ quote_access:{k:1,cat:'證詞',t:'報價權限三人',x:'孫寧證實：報價單完整存取權限只有三人——她本人、吳冠瑩、葉詩宣。\n近半年報價屢遭「新視界」精準壓過 0.5%，內鬼必在三人之中。'},
+ sill:{k:0,cat:'雜項',t:'窗台的痕跡',x:'窗台上有鴿子留下的「痕跡」。\n據說吳冠瑩副理因此半年沒踏進靠窗區一步。'},
+ gongwan_box:{k:0,cat:'雜項',t:'貢丸紙箱',x:'陳資涵家寄來的貢丸紙箱。側面被人用麥克筆寫上「內有離職同事（誤）」，\n字跡被憤怒地劃掉了三次。'},
+ mirror_note:{k:0,cat:'雜項',t:'鏡子上的便利貼',x:'女廁鏡子上貼著便利貼：「今天也要笑著騙自己喜歡上班 :)」\n——是高于雯的字跡。'},
+ menu_board:{k:0,cat:'雜項',t:'嘉常菜菜單',x:'滷肉飯 50／豬血糕 40（花生粉免費自取）／貢丸湯 35——缺貨中。\n老闆娘註記：「比不過陳家的。」'},
+};
+</script>
+<script>
+/* ============ DIALOGUES ============ */
+/* topic: {id,label,cond?,flag?,clue?,lines[]} */
+const DLG={
+ sun:{greet:['「調查員。需要什麼資料，直接說。」','孫寧的表情平靜得像在看週報。寬 T 上別著一枚小小的綠色徽章——飛天小女警的毛毛。'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日晚上在家，看飛天小女警重播。毛毛登場那集。」','「獨居，沒有人證。」她停頓一秒。「你要懷疑我，可以。拿證據來。」']},
+   {id:'rel',label:'與死者的關係',lines:['「羅本添業務能力強，但手腳不乾淨的傳聞一直都有。」','「最近他頻繁預約小會議室，說在做『機密報告』——連我都不給看。」']},
+   {id:'odd',label:'有注意到異狀嗎',lines:['「有。近半年，我們的報價連續被『新視界廣告』用 0.5% 的差距壓過。」','「0.5%。」她重複了一次。「精準得不像巧合。」']},
+   {id:'log',label:'關於門禁系統',cond:s=>s.clues.has('door_log'),lines:['「門禁只記錄進入，離開不用刷卡。總務省錢的結果。」','「所以，撿到卡的任何人，都能用那張卡『成為』別人。」']},
+   {id:'access',label:'關於報價權限',cond:s=>s.clues.has('leak_draft'),clue:'quote_access',lines:['「他在查報價外洩？」孫寧的眉毛第一次動了一下。','「報價單的完整權限只有三個人：我、吳冠瑩、葉詩宣。」','「我知道這代表什麼——名單裡有我。」她直視著你。「所以，去查。」']},
+ ]},
+ wu:{greet:['「調查員！你終於來了！」吳冠瑩一把抓住你的手臂，力道大得像要把案情直接搖出來。','「是我發現的……我到現在還在起雞皮疙瘩。」'],
+  topics:[
+   {id:'found',label:'發現遺體的經過',lines:['「週一早上八點五十，我去開小會議室準備晨會。門一開——冷氣冷得像走進冰庫！」','「羅經理趴在桌上，手裡還抓著半顆貢丸。投影機還在放 Q3 簡報，不知道循環幾百遍了……」','「我當場尖叫。比看到鴿子的時候還大聲。」']},
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日跟大學同學唱 KTV 唱到十一點！唱車銀優主演那部劇的 OST，全程錄影，收據都留著！」','「要幾個人證，有幾個人證！」']},
+   {id:'rel',label:'與死者的關係',lines:['「他喔——把我的業績灌到自己頭上不是一次兩次了！」她的音量讓隔壁桌的筆筒震了一下。','「但你聽好，我要弄他，會直接拍桌跟他對幹——才不搞這種陰的！」']},
+   {id:'odd',label:'有注意到異狀嗎',clue:'stair_argument',lines:['「窗邊那區我不敢去，有鴿子。」她抖了一下。','「不過……週五下班的時候，我看到羅經理跟葉主任在樓梯間講話，氣氛超僵。」','「我只聽到一句——『最後一次』。」']},
+   {id:'leak',label:'關於報價外洩',cond:s=>s.clues.has('leak_draft'),lines:['「新視界？我前同事跳槽去那，最近的確一直搶我們客戶……」','「報價權限我是有啦。但拜託，我連自己的 Excel 都會打錯，外洩這種細活，不是我的風格。」']},
+ ]},
+ yeh:{greet:['「……有事？」葉詩宣從文件裡抬起頭。','她很高。即使坐著，視線也幾乎與你平行。桌面整齊得沒有一張多餘的紙。'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',flag:'yeh_alibi',lines:['「週日晚上在家，看金聖圭的線上演唱會。九點開始，看到快十二點。」','「還有問題嗎？」']},
+   {id:'rel',label:'與死者的關係',lines:['「業務歸他管，我管專案品質。交集不多。」','回答乾淨得像被裁切過。']},
+   {id:'odd',label:'有注意到異狀嗎',lines:['「沒有。」','她想了想，補了一句：「硬要說的話——董伊淇上週五一直在找她的門禁卡。」']},
+   {id:'peanut',label:'週五買的花生粉',cond:s=>s.clues.has('peanut_buy'),lines:['「……我週五外帶滷味，多拿幾包花生粉配豬血糕，這也要報備？」','她的下顎線繃緊了一瞬。「嘉常菜的花生粉本來就是自取的。」']},
+   {id:'confront',label:'質問：演唱會的日期',cond:s=>s.clues.has('concert_date'),clue:'yeh_lie',lines:['「金聖圭的線上演唱會辦在週六。週日，沒有場次。」你說。','沉默持續了三秒。','「……重播。我看的是重播。」','——線上演唱會並沒有官方重播。她的手指在桌面上輕輕敲了兩下。','這是她第一次露出破綻。']},
+   {id:'press',label:'質問：每月十五號的五萬',cond:s=>s.clues.has('ledger')&&s.clues.has('note_scraps'),lines:['「羅本添的帳本上，每月十五號都有一筆『Y』的五萬元入帳。」你把字條殘片的影本放到桌上。','「女廁撈出來的字條寫著：評審會那天，資料會出現在所有人的信箱。」','葉詩宣看著那些紙片，很久，很久沒有說話。','「……你想說什麼？」','她的聲音，第一次出現了裂縫。']},
+ ]},
+ tung:{greet:['「啊，調查員？先坐先坐。」董伊淇朝你晃了晃手裡的冬瓜檸檬。','「要不要來一杯？這是我在這間公司唯一捨不得的東西。……都要離職了還碰上這種事，我的離職流程不會被卡住吧。」'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日晚上朋友幫我辦離職歡送餐，熱炒店吃到十點半。IG 限動有打卡，三個朋友都能作證。」','「回家之後看吉澤亮的日劇看到睡著。完美的一晚——直到週一早上。」']},
+   {id:'card',label:'門禁卡的事',lines:['「週五下午就發現不見了！我馬上跟總務申請補發，申請單還在我桌上。」','「奇怪的是……誰會偷一張『快離職的人』的卡啊？」她吸了一口冬瓜檸檬。','「……啊。因為快離職，最不會被懷疑，也最沒有動機。對吧？」']},
+   {id:'rel',label:'與死者的關係',lines:['「交接的時候，羅經理一直凹我把客戶資料整理給他『參考』。」','「我覺得怪怪的，都用公版打發他。現在想想……他要那些資料，是要幹嘛？」']},
+   {id:'log',label:'門禁紀錄上有妳',cond:s=>s.clues.has('door_log'),lines:['「二十一點四十一？！我那時候在熱炒店啊！」她差點打翻飲料。','「收據、限動、人證通通都有！到底是誰、用我的卡……」']},
+ ]},
+ kao:{greet:['「問。」','高于雯的視線沒有離開螢幕。'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「健身房。到九點。回家。睡覺。」','「教練可以作證。」','四句話，說完了。']},
+   {id:'rel',label:'與死者的關係',lines:['「他把我做的提案簡報改個 LOGO 就拿去跟總監報告——」音量瞬間放大到整層樓都聽得到，隨即又降回平靜。','「但我都記在追蹤表裡了。我要弄他，會用正式管道。」']},
+   {id:'odd',label:'有注意到異狀嗎',lines:['「冷凍庫的貢丸。」','「週五還很多。週一少很多。」','「就這樣。」']},
+   {id:'minion',label:'關於「小小兵」',lines:['「叫我們小小兵的人，都會被記在小本本上。」','你決定不要問是哪一本小本本。']},
+ ]},
+ cty:{greet:['「請坐。」陳亭宇微笑。那個微笑，美得有點超出辦公室的規格。','「……你不怕跟我說話？業務們都用 Line 跟我溝通。坐我斜對面那位，甚至用便利貼。」'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日是 Crotis 的簽售會，排到晚上十點。」','「票根和小卡都在包包裡。要看嗎？」']},
+   {id:'rel',label:'與死者的關係',lines:['「羅經理是少數敢當面跟我講話的業務。」她輕輕嘆氣。','「雖然內容，都是想凹我改時程。」']},
+   {id:'odd',label:'有注意到異狀嗎',clue:'witness_ty',lines:['「週五傍晚，我看到有人在茶水間站了很久，背影對著冷凍庫。」','「我以為又是誰在偷吃資涵家的貢丸——這間公司都習慣了。」','「身形？滿高的，短髮。我在趕稿，沒看臉。」']},
+ ]},
+ peng:{greet:['彭筠喬的桌面被周子瑜的周邊佔滿，本人正在幫壓克力立牌調整角度。','「調查員好！等我三秒，子瑜的角度不能歪。」'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日是子瑜年度人氣投票的最後一天！我從晚上八點投到半夜十二點，每一輪截圖都有時間戳記。」','「為了子瑜我可以做出任何事——除了殺人。殺人會被抓，被抓就不能投票了。」','邏輯意外地嚴密。']},
+   {id:'concert',label:'追星情報：金聖圭',cond:s=>s.flags.yeh_alibi,clue:'concert_date',lines:['「金聖圭的線上演唱會？」她秒答：','「週六晚上八點。我朋友是 INSPIRIT，全程都在同步群組刷。」','「週日？週日根本沒有場次啊。線上場也沒有官方重播——這種事，我們追星的最清楚。」','——葉詩宣的不在場證明，出現了裂縫。']},
+   {id:'odd',label:'有注意到異狀嗎',lines:['「週一早上我去女廁，垃圾桶被翻得亂七八糟，洗手台下面還有水漬。」','「我還想說，是不是打掃阿姨換新人了。」']},
+   {id:'minion',label:'關於「小小兵」',lines:['「小小兵是愛稱啦！我跟于雯姊是革命情感。」','「順帶一提，把我們的合照做成貼圖的，也是我。」']},
+ ]},
+ cth:{greet:['「先講清楚！」陳資涵霍地站起來。','「我家貢丸的肉是溫！體！豬！不是離職同事！！」','周圍的動畫師們露出「又開始了」的表情。'],
+  topics:[
+   {id:'gongwan',label:'關於貢丸',lines:['「冷凍庫那些是我家寄來請大家吃的。結果羅經理最愛偷拿，還到處造謠肉是離職員工——」','「那個謠言的源頭就！是！他！」','「我週五氣到把每一袋都封箱夾好。結果週一發現有一袋被打開又重新夾上——」','「夾子方向跟我的習慣相反。我有強迫症，夾子開口一律朝左。」']},
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日全家在工廠做貢丸，二十個員工都可以作證。」','「我還直播了打漿過程。觀看人數，三個。」']},
+   {id:'odd',label:'現在的心情',lines:['「他死的時候手裡抓著我家的貢丸……」她突然萎靡下來。','「行銷部還問我要不要出『名偵探風味』聯名。」','「我拒絕了。暫時。」']},
+ ]},
+ liu:{greet:['「你來之前，我抽到了正義牌。」劉世華神秘地說。','桌上攤著塔羅牌，螢幕桌布是一張彭筠喬工作中的側臉（看起來是偷拍的）。「所以，問吧。牌都知道。」'],
+  topics:[
+   {id:'tarot',label:'關於塔羅牌',lines:['「我的牌，週五下午少了一張——『高塔』。」','「高塔的意思是：既有結構的崩塌、突如其來的災難，還有……謊言被拆穿。」','「有人拿走它，是想『說』什麼。或者——想把話，推給牌來說。」']},
+   {id:'reading',label:'占卜紀錄',cond:s=>s.clues.has('tarot_card'),clue:'tarot_reading',lines:['「你在現場看到高塔了？」她閉上眼睛。','「上上週，葉主任私下找我抽牌。她問：『如果有人擋在你必須走的路上，怎麼辦？』」','「她抽到的，就是高塔。我還開玩笑說——塔倒了，路就通了。」','「……我現在笑不出來。」']},
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日晚上八點到十點開塔羅直播，三十幾個觀眾，有存檔。」','「之後翻彭筠喬的限時動態——她在投周子瑜的票，每一輪都發。我翻著翻著就在椅子上睡著了。」','「牌說，這叫『聖杯九：滿足』。」']},
+   {id:'crush',label:'桌布上的人是……',lines:['「……你看到了。」劉世華以超乎尋常的速度按熄螢幕。','「筠喬的側臉有一種聖杯皇后的能量。我只是在做能量紀錄。」','「這件事如果傳出去，我會在你的命運裡置入倒吊人。」','你決定尊重她的能量紀錄。']},
+   {id:'odd',label:'有注意到異狀嗎',lines:['「羅經理座位上方的磁場，最近很混濁。」','你等了一下。沒有然後了。這就是她完整的觀察。']},
+ ]},
+ lin:{greet:['「你是……誰？」林怡安瞇起眼睛。','「抱歉，我臉盲。除非是亭宇姊那種等級的臉，不然我存不進記憶體。」'],
+  topics:[
+   {id:'alibi',label:'案發當晚在哪',lines:['「週日晚上八點到十一點在公司等渲染。動畫師的宿命。」','「工作站的紀錄可以證明——我連去便利商店的時間都沒有。」']},
+   {id:'witness',label:'那晚看到了什麼',clue:'witness_lin',lines:['「九點四十幾分，我去茶水間裝水。」','「有一個人從小會議室那邊，快步走向女廁。很高、棕色短髮、穿襯衫。」','「臉？」她攤手。「我真的不知道。對我來說，大家的臉都是同一顆預設模型。」','「之後，女廁的水聲響了很——久。」']},
+   {id:'feature',label:'那個身形像誰',cond:s=>s.clues.has('witness_lin'),lines:['「高的、短髮、襯衫嘛……」她認真地想。「比我高半顆頭以上。我一百六十七。」','「臉我不行，但身形我是專業的——動畫師調 rig 天天在看比例。」','「那個肩頸的角度，我有印象。是常常低頭看文件的人。」']},
+   {id:'face',label:'關於臉盲',lines:['「亭宇姊的臉，是唯一存進我記憶體的檔案。」','她一臉虔誠。「無損格式。」']},
+ ]},
+ boss:{greet:['「唉唷，調查員！」老闆娘在圍裙上抹抹手。','「羅經理的事我聽說了……造孽喔。坐，滷肉飯算你八折。」'],
+  topics:[
+   {id:'victim',label:'關於羅經理',clue:'allergy_known',lines:['「老客人了。但他不能吃花生！有一次乾麵不小心放了花生粉，整張臉腫起來，當場休克——」','「還好他包包裡有一支急救筆，自己往大腿一戳才救回來。從那次之後，他的單子全部備註『不要花生』。」','「那天同桌的是你們公司幾位主管。孫總監、吳副理、葉主任——都嚇壞了，親眼看到的。」']},
+   {id:'friday',label:'週五晚上的客人',clue:'peanut_buy',lines:['「週五喔……葉主任有來外帶滷味。」','「她多要了五包花生粉，說『同事要配豬血糕』。」','「我還想說，她平常根本不吃豬血糕的啊。滷味配花生粉，也是頭一次聽到。」']},
+   {id:'sunday',label:'週日晚上呢',lines:['「我們週日公休啦！」','「所以他那晚吃的，絕對不是我們家的東西。」','「是說……聽講他手裡抓著貢丸？可憐喔，到最後都在吃。」']},
+   {id:'gossip',label:'八卦時間',lines:['「你們公司的事，我知道的可多了。」老闆娘壓低聲音。','「吳副理怕鴿子、董小姐要離職、陳小姐家的貢丸其實真的很好吃——」','「還有喔，羅經理最近出手很闊。每個月十五號過後，都來點最貴的。」','「我還虧他，是不是中了樂透。」']},
+ ]},
+};
+
+/* ============ SCENE DEFS (hotspots) ============ */
+const SCENES={
+ window:{label:'靠窗辦公區',chars:[{id:'liu',x:100},{id:'cth',x:205},{id:'lin',x:305}],
+  objs:[
+   {id:'sill',x:34,y:118,w:76,h:16,label:'窗台'},
+   {id:'tarot_box',x:66,y:136,w:22,h:12,label:'塔羅牌盒',clue:null,custom:'tarotbox'},
+   {id:'gongwan_box',x:236,y:150,w:28,h:22,label:'貢丸紙箱'},
+   {id:'render_log',x:338,y:128,w:30,h:20,label:'林怡安的工作站'},
+  ]},
+ office2:{label:'辦公區 2（含茶水間）',chars:[{id:'kao',x:192},{id:'cty',x:272},{id:'peng',x:352}],
+  objs:[
+   {id:'fridge_bag',x:96,y:104,w:32,h:66,label:'冷凍庫'},
+   {id:'microwave',x:22,y:118,w:28,h:18,label:'微波爐'},
+   {id:'trash_peanut',x:58,y:150,w:18,h:22,label:'垃圾桶'},
+   {id:'tung_desk',x:150,y:130,w:44,h:20,label:'董伊淇的桌位'},
+  ]},
+ sales:{label:'業務辦公區',chars:[{id:'wu',x:150},{id:'yeh',x:248}],
+  objs:[
+   {id:'salesboard',x:30,y:58,w:72,h:46,label:'業績白板',custom:'salesboard'},
+   {id:'leak_draft',x:322,y:132,w:24,h:12,label:'桌上的文件夾'},
+   {id:'ledger',x:318,y:150,w:44,h:12,label:'羅經理的抽屜'},
+   {id:'epipen_pouch',x:296,y:168,w:18,h:20,label:'側背包'},
+  ]},
+ meet_s:{label:'小會議室（案發現場）',chars:[],
+  objs:[
+   {id:'door_log',x:76,y:112,w:14,h:18,label:'門禁面板'},
+   {id:'ac_remote',x:112,y:28,w:52,h:16,label:'冷氣'},
+   {id:'scene_body',x:224,y:106,w:56,h:52,label:'遺體位置'},
+   {id:'soup_bowl',x:168,y:128,w:18,h:12,label:'湯碗'},
+   {id:'tarot_card',x:198,y:130,w:12,h:10,label:'桌上的卡片'},
+   {id:'projector',x:300,y:52,w:74,h:56,label:'投影幕'},
+  ]},
+ meet_b:{label:'大會議室',chars:[{id:'sun',x:110}],
+  objs:[
+   {id:'whiteboard_review',x:34,y:52,w:96,h:58,label:'白板議程'},
+   {id:'epipen_cabinet',x:328,y:64,w:48,h:106,label:'高櫃'},
+  ]},
+ toilet:{label:'女廁',chars:[],
+  objs:[
+   {id:'mirror_note',x:86,y:74,w:14,h:14,label:'鏡子上的便利貼'},
+   {id:'note_scraps',x:28,y:132,w:80,h:12,label:'洗手台下方縫隙'},
+   {id:'glove',x:150,y:162,w:20,h:26,label:'垃圾桶'},
+  ]},
+ rest:{label:'嘉常菜',chars:[{id:'boss',x:150,fy:160},{id:'tung',x:300}],
+  objs:[
+   {id:'menu_board',x:140,y:36,w:120,h:52,label:'菜單板'},
+   {id:'peanut_counter',x:216,y:124,w:24,h:14,label:'花生粉自取區'},
+  ]},
+};
+const SCENE_ORDER=['window','office2','sales','meet_s','meet_b','toilet','rest'];
+
+/* 特殊物件（沒有直接對應線索卡） */
+const CUSTOM_OBJ={
+ tarotbox:{t:'塔羅牌盒',x:'劉世華的塔羅牌盒。盒標寫著「78 張」。\n你數了一下——77 張。\n少的那張是……也許該問問牌的主人。'},
+ salesboard:{t:'業績白板',x:'業績排行榜：羅本添的名字霸佔榜首七個月。\n旁邊被人用極小的字寫著——「呵」。'},
+};
+</script>
+<script>
+/* ============ PIXEL RENDER ============ */
+const cv=document.getElementById('cv'), g=cv.getContext('2d');
+function R(c,col,x,y,w,h){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+
+function glow(c,x,y,r,col){
+  c.save();
+  for(let i=r;i>2;i-=3){c.globalAlpha=0.035;c.fillStyle=col;c.fillRect(x-i,y-i*0.6,i*2,i*1.2);}
+  c.restore();c.globalAlpha=1;
+}
+function drawChar(c,cx,fy,ch){
+  const dh=ch.dh||0;
+  const legH=7+Math.max(0,dh), torso=11+Math.min(0,dh), headH=8;
+  const ty=fy-legH-torso, hy=ty-headH;
+  if(ch.long){R(c,ch.hair,cx-8,hy+1,3,headH+torso-4);R(c,ch.hair,cx+5,hy+1,3,headH+torso-4);}
+  R(c,'#2b2b33',cx-5,fy-legH,4,legH);R(c,'#2b2b33',cx+1,fy-legH,4,legH);
+  R(c,'#15151a',cx-5,fy-2,4,2);R(c,'#15151a',cx+1,fy-2,4,2);
+  R(c,ch.top,cx-8,ty+1,2,torso-4);R(c,ch.top,cx+6,ty+1,2,torso-4);
+  R(c,SKIN,cx-8,ty+torso-3,2,2);R(c,SKIN,cx+6,ty+torso-3,2,2);
+  R(c,ch.top,cx-6,ty,12,torso);
+  if(ch.acc==='apron'){R(c,'#efe8dc',cx-4,ty+2,8,torso-3);}
+  if(ch.acc==='puff'){R(c,'#7fd35a',cx-1,ty+2,3,3);}
+  R(c,SKIN,cx-5,hy,10,headH);
+  R(c,ch.hair,cx-6,hy-2,12,3);
+  R(c,ch.hair,cx-6,hy+1,1,3);R(c,ch.hair,cx+5,hy+1,1,3);
+  if(!ch.long&&!ch.crop){R(c,ch.hair,cx-7,hy+1,2,6);R(c,ch.hair,cx+5,hy+1,2,6);}
+  if(ch.bangs==='mid'){R(c,ch.hair,cx-5,hy+1,4,2);R(c,ch.hair,cx+1,hy+1,4,2);}
+  else if(ch.bangs==='air'){for(let i=-5;i<5;i+=2)R(c,ch.hair,cx+i,hy+1,1,2);}
+  else{R(c,ch.hair,cx-5,hy+1,10,1);}
+  R(c,'#20202a',cx-3,hy+4,2,2);R(c,'#20202a',cx+2,hy+4,2,2);
+  if(ch.acc==='cup'){R(c,'#bfeef0',cx+8,ty+torso-7,4,6);R(c,'#e06a5a',cx+9,ty+torso-11,1,5);}
+}
+function headTop(ch,fy){const dh=ch.dh||0;return fy-(7+Math.max(0,dh))-(11+Math.min(0,dh))-8-2;}
+function drawPortrait(cnv,ch){
+  const c=cnv.getContext('2d');c.imageSmoothingEnabled=false;
+  R(c,'#152a22',0,0,cnv.width,cnv.height);
+  c.fillStyle='rgba(255,255,255,0.03)';
+  for(let y=6;y<cnv.height;y+=14)for(let x=6;x<cnv.width;x+=16)c.fillRect(x,y,2,2);
+  c.save();c.scale(5,5);drawChar(c,11,28,{...ch,dh:0});c.restore();
+}
+
+/* ---- scene furniture helpers ---- */
+function roomBase(c,wall,floorY,floorCol){
+  R(c,'#0c1613',0,0,400,10);
+  R(c,wall,0,10,400,floorY-10);
+  c.fillStyle='rgba(255,255,255,0.03)';
+  for(let y=18;y<floorY-10;y+=14)for(let x=8;x<400;x+=16)c.fillRect(x+((y/14|0)%2?8:0),y,2,2);
+  R(c,'#1c352e',0,floorY-6,400,6);
+  R(c,floorCol||'#3a2b20',0,floorY,400,200-floorY);
+  c.fillStyle='rgba(0,0,0,0.18)';
+  for(let x=0;x<400;x+=40)c.fillRect(x,floorY,1,200-floorY);
+  R(c,'#08100c',0,200,400,25);
+}
+function lamp(c,x,ly){
+  R(c,'#0a0f0d',x,10,2,ly-10);
+  R(c,'#233038',x-8,ly,18,4);R(c,'#2b3b45',x-5,ly+4,12,3);
+  R(c,'#ffd98a',x-3,ly+7,8,3);
+  glow(c,x+1,ly+9,26,'#ffc46a');
+}
+function winNight(c,x,y,w,h){
+  R(c,'#3c5a4c',x-3,y-3,w+6,h+6);
+  R(c,'#0d1c2c',x,y,w,h);
+  c.fillStyle='#cfe6ff';
+  for(let i=0;i<10;i++)c.fillRect(x+(i*37)%(w-2)+1, y+(i*23)%(h-20)+2,1,1);
+  c.fillStyle='#132a3c';
+  for(let i=0;i<w-8;i+=10){const bh=8+((i*7)%14);c.fillRect(x+i+1,y+h-bh,8,bh);}
+  c.fillStyle='#ffd98a';
+  for(let i=5;i<w-6;i+=13)c.fillRect(x+i,y+h-6-((i*5)%9),1,1);
+  R(c,'#ffeec2',x+w-15,y+7,6,6);
+  R(c,'#3c5a4c',x+(w/2|0)-1,y,2,h);R(c,'#3c5a4c',x,y+(h/2|0)-1,w,2);
+}
+function desk(c,x,y,w,mon){
+  R(c,'#4a3423',x,y,w,6);R(c,'#2e2016',x,y+6,w,2);
+  R(c,'#2e2016',x+3,y+8,4,26);R(c,'#2e2016',x+w-7,y+8,4,26);
+  if(mon){const mx=x+(w/2|0)-10;
+    R(c,'#10181f',mx,y-16,20,14);
+    R(c,'#0e2f2c',mx+2,y-14,16,10);
+    c.fillStyle='#57d7c9';for(let i=0;i<3;i++)c.fillRect(mx+4,y-12+i*3,10-i*3,1);
+    R(c,'#10181f',mx+8,y-3,4,3);
+    glow(c,mx+10,y-9,12,'#57d7c9');
+  }
+}
+function chairS(c,x,y){R(c,'#233038',x,y-12,4,12);R(c,'#233038',x,y,14,4);R(c,'#15151a',x+1,y+4,2,8);R(c,'#15151a',x+11,y+4,2,8);}
+function tape(c,x,y,len,rot){
+  c.save();c.translate(x,y);c.rotate(rot);
+  R(c,'#e8c832',0,0,len,6);
+  c.fillStyle='#1a1a1a';for(let i=5;i<len-6;i+=13)c.fillRect(i,1,6,4);
+  c.restore();
+}
+function plant(c,x,y){
+  R(c,'#7a4a30',x,y-8,10,8);
+  R(c,'#3f7a4f',x+1,y-16,3,8);R(c,'#4f8f5c',x+4,y-19,3,11);R(c,'#3f7a4f',x+7,y-14,3,6);
+}
+
+/* ---- 7 scenes ---- */
+const DRAW={
+ window(c){
+  roomBase(c,'#274a41',170);
+  winNight(c,30,40,90,86);winNight(c,150,40,90,86);
+  R(c,'#2f473d',26,126,98,6);
+  c.fillStyle='#e8e2d2';c.fillRect(48,124,2,2);c.fillRect(72,125,2,1);c.fillRect(94,124,1,2);
+  R(c,'#57d7c9',348,54,3,50);glow(c,349,78,20,'#57d7c9');
+  lamp(c,300,26);
+  desk(c,56,150,54,true);desk(c,170,150,54,true);desk(c,318,150,64,true);
+  R(c,'#7a68a8',66,142,16,6);R(c,'#ffc46a',66,141,16,1);
+  R(c,'#8a5a34',236,152,26,20);R(c,'#6b3f22',236,160,26,2);R(c,'#d8ccb2',240,154,18,4);
+  plant(c,382,168);
+ },
+ office2(c){
+  roomBase(c,'#274a41',170);
+  lamp(c,52,24);lamp(c,250,26);
+  R(c,'#2a343a',14,144,74,28);R(c,'#3d4a52',14,136,76,8);
+  R(c,'#586b75',72,131,14,5);R(c,'#8fa3ad',76,124,2,7);
+  R(c,'#1b232b',22,116,28,20);R(c,'#0e2f2c',26,120,14,12);R(c,'#57d7c9',42,121,4,2);
+  glow(c,33,126,10,'#57d7c9');
+  R(c,'#8fa3ad',96,104,32,66);R(c,'#6d7f89',96,133,32,3);
+  R(c,'#333b40',122,112,3,12);R(c,'#333b40',122,142,3,16);
+  c.fillStyle='#dff3ff';c.fillRect(102,110,2,2);c.fillRect(110,116,2,2);
+  R(c,'#37464e',58,152,18,20);R(c,'#2a363c',56,150,22,4);
+  desk(c,148,150,50,true);desk(c,228,150,50,true);desk(c,312,150,58,true);
+  R(c,'#bfeef0',154,140,5,10);R(c,'#bfeef0',160,142,5,8);R(c,'#e06a5a',156,136,1,5);
+  R(c,'#e8e2d2',176,145,12,5);R(c,'#b13a3a',178,146,8,1);
+ },
+ sales(c){
+  roomBase(c,'#274a41',170);
+  lamp(c,196,24);
+  R(c,'#3c5a4c',28,56,76,50);R(c,'#e6ebe4',32,60,68,42);
+  R(c,'#e06a5a',36,66,52,4);R(c,'#5a7a68',36,74,44,3);R(c,'#5a7a68',36,80,36,3);R(c,'#5a7a68',36,86,30,3);
+  c.fillStyle='#8a8a8a';c.fillRect(90,92,4,4);
+  desk(c,120,150,54,true);desk(c,204,150,54,true);
+  desk(c,310,150,66,true);
+  R(c,'#4a3423',316,158,48,26);R(c,'#2e2016',316,170,48,2);
+  R(c,'#ffc46a',336,162,4,2);R(c,'#ffc46a',336,175,4,2);
+  R(c,'#d8b25a',322,144,22,6);R(c,'#b13a3a',324,145,4,4);
+  R(c,'#6b4a2f',296,170,18,18);R(c,'#4a3423',298,166,14,4);R(c,'#3a2a1a',302,158,2,10);
+  tape(c,300,140,84,-0.18);tape(c,302,156,82,0.12);
+ },
+ meet_s(c){
+  roomBase(c,'#25433c',170);
+  R(c,'#4a3423',24,82,52,6);R(c,'#4a3423',24,82,4,88);R(c,'#4a3423',72,82,4,88);
+  R(c,'#12211c',28,88,44,82);
+  R(c,'#1b232b',78,112,12,16);R(c,'#57d7c9',81,115,6,4);
+  c.fillStyle='#e06a5a';c.fillRect(81,122,2,2);c.fillStyle='#7fd35a';c.fillRect(85,122,2,2);
+  R(c,'#c8d4d8',112,26,52,14);
+  c.fillStyle='#8fa3ad';for(let i=0;i<4;i++)c.fillRect(116+i*12,30,8,2);
+  c.fillStyle='rgba(140,220,255,0.35)';
+  c.fillRect(120,44,2,6);c.fillRect(134,42,2,8);c.fillRect(150,44,2,6);
+  R(c,'#233038',248,14,20,9);R(c,'#57d7c9',266,16,3,5);
+  c.fillStyle='rgba(87,215,201,0.07)';
+  c.beginPath();c.moveTo(268,20);c.lineTo(300,56);c.lineTo(300,106);c.lineTo(268,23);c.closePath();c.fill();
+  R(c,'#1a2530',298,52,78,58);R(c,'#0f1a22',302,56,70,50);
+  c.fillStyle='#57d7c9';c.font='11px monospace';c.fillText('Q3',308,72);
+  R(c,'#57d7c9',308,80,10,18);R(c,'#ffc46a',322,86,10,12);R(c,'#e06a5a',336,76,10,22);
+  glow(c,336,82,18,'#57d7c9');
+  R(c,'#4a3423',140,138,152,9);R(c,'#2e2016',148,147,6,26);R(c,'#2e2016',278,147,6,26);
+  chairS(c,150,128);chairS(c,190,128);
+  R(c,'#233038',238,150,16,4);R(c,'#233038',252,138,4,16);
+  c.fillStyle='#eef0ea';
+  const dash=(x,y,w,h)=>{for(let i=0;i<w;i+=4)c.fillRect(x+i,y,2,1);for(let i=0;i<h;i+=4){c.fillRect(x,y+i,1,2);c.fillRect(x+w,y+i,1,2);}for(let i=0;i<w;i+=4)c.fillRect(x+i,y+h,2,1);};
+  dash(240,110,20,16);
+  for(let i=0;i<22;i+=4)c.fillRect(238-i,126+(i/2|0),2,1);
+  R(c,'#d8d2c2',168,130,16,8);R(c,'#b8ae98',170,132,12,4);
+  R(c,'#efe8dc',198,128,10,14);R(c,'#b13a3a',201,131,4,8);
+ },
+ meet_b(c){
+  roomBase(c,'#274a41',170);
+  lamp(c,220,24);
+  R(c,'#3c5a4c',30,48,104,66);R(c,'#e6ebe4',34,52,96,58);
+  R(c,'#b13a3a',38,57,58,4);
+  R(c,'#5a7a68',38,66,84,2);R(c,'#5a7a68',38,72,78,2);R(c,'#5a7a68',38,78,84,2);
+  R(c,'#ffc46a',38,86,72,3);
+  R(c,'#5a7a68',38,94,60,2);
+  R(c,'#4a3423',140,142,164,9);R(c,'#2e2016',150,151,6,22);R(c,'#2e2016',288,151,6,22);
+  chairS(c,150,132);chairS(c,196,132);chairS(c,242,132);
+  R(c,'#4a3423',328,64,48,106);
+  R(c,'#241a12',328,64,48,4);
+  R(c,'#2e2016',351,68,2,102);
+  R(c,'#ffc46a',344,112,3,4);R(c,'#ffc46a',357,112,3,4);
+  c.fillStyle='rgba(255,255,255,0.14)';c.fillRect(336,62,20,2);
+  plant(c,20,168);
+ },
+ toilet(c){
+  roomBase(c,'#2e4d46',170,'#33403c');
+  c.fillStyle='rgba(255,255,255,0.05)';
+  for(let y=14;y<160;y+=13)c.fillRect(0,y,400,1);
+  for(let x=12;x<400;x+=13)c.fillRect(x,10,1,154);
+  R(c,'#3c5a4c',28,64,76,44);R(c,'#7fb2b8',32,68,68,36);
+  c.fillStyle='rgba(255,255,255,0.25)';c.fillRect(40,70,3,32);c.fillRect(48,70,2,32);
+  R(c,'#ffe08a',88,74,10,10);R(c,'#c9a94a',89,80,8,1);
+  R(c,'#cfd6d2',24,126,84,10);
+  R(c,'#e6ebe8',30,124,22,4);R(c,'#e6ebe8',68,124,22,4);
+  R(c,'#5a6a70',42,136,4,22);R(c,'#5a6a70',80,136,4,22);
+  R(c,'#0d1613',26,136,80,4);
+  R(c,'#37464e',150,164,20,24);R(c,'#2a363c',148,162,24,4);
+  R(c,'#2f5a55',238,80,56,90);R(c,'#3f6f68',242,86,48,78);R(c,'#ffc46a',284,124,3,4);
+  R(c,'#2f5a55',302,80,56,90);R(c,'#3f6f68',306,86,48,78);R(c,'#ffc46a',348,124,3,4);
+  R(c,'#0d1c2c',306,34,30,20);R(c,'#3c5a4c',305,33,32,2);R(c,'#3c5a4c',305,54,32,2);
+  R(c,'#3c5a4c',320,34,2,20);
+  lamp(c,150,22);
+ },
+ rest(c){
+  roomBase(c,'#3a2a24',170,'#2c2018');
+  const lant=(x)=>{R(c,'#c23b30',x-6,28,12,14);R(c,'#ffc46a',x-6,26,12,2);R(c,'#ffc46a',x-6,42,12,2);
+    R(c,'#8a2a20',x-1,44,2,4);glow(c,x,36,18,'#ff9a5a');R(c,'#0a0f0d',x-1,10,2,16);};
+  lant(70);lant(330);
+  R(c,'#ffc46a',134,30,132,62);R(c,'#5a1f1a',138,34,124,54);
+  c.fillStyle='#efdcc0';c.font='9px "Microsoft JhengHei",sans-serif';c.fillText('嘉 常 菜',172,44);
+  for(let i=0;i<3;i++){R(c,'#efdcc0',146,52+i*11,56-i*10,3);R(c,'#ffc46a',238,52+i*11,12,3);}
+  R(c,'#241a12',352,96,36,74);
+  R(c,'#c23b30',350,92,40,12);c.fillStyle='#efdcc0';c.fillRect(354,96,2,6);c.fillRect(368,96,2,6);c.fillRect(382,96,2,6);
+ },
+};
+function restOverlay(c){
+  R(c,'#6b3a2a',56,138,210,10);
+  R(c,'#54291c',56,148,210,26);
+  c.fillStyle='rgba(0,0,0,0.2)';for(let x=64;x<260;x+=24)c.fillRect(x,150,1,22);
+  R(c,'#8a8f96',96,126,22,12);R(c,'#6d7278',100,123,14,3);R(c,'#3a3f44',106,120,3,3);
+  c.fillStyle='rgba(255,255,255,0.25)';c.fillRect(102,112,2,6);c.fillRect(108,108,2,8);
+  R(c,'#b17c3a',216,128,24,10);
+  R(c,'#c23b30',219,124,5,7);R(c,'#c23b30',226,123,5,8);R(c,'#c23b30',233,124,5,7);
+}
+
+/* ============ ENGINE ============ */
+const S={scene:'window',clues:new Set(),flags:{},started:false,attempts:0};
+const TOTAL=Object.keys(CLUES).length;
+const ACCUSE_AT=18;
+let blinkOn=true, endMode='lose', curChar=null;
+
+const $=id=>document.getElementById(id);
+
+function diamond(c,x,y,col){R(c,col,x-1,y-4,2,8);R(c,col,x-3,y-2,6,4);R(c,'#fff6dd',x-1,y-2,2,4);}
+
+function render(){
+  g.imageSmoothingEnabled=false;
+  const sc=SCENES[S.scene];
+  DRAW[S.scene](g);
+  for(const ch of sc.chars){drawChar(g,ch.x,ch.fy||193,CHARS[ch.id].c);}
+  if(S.scene==='rest')restOverlay(g);
+  if(blinkOn){
+    for(const o of sc.objs){
+      const seen=o.custom?S.flags['seen_'+o.id]:S.clues.has(o.id);
+      if(!seen)diamond(g,o.x+o.w/2,o.y-4,'#ffc46a');
+    }
+  }
+  for(const ch of sc.chars){
+    const fy=ch.fy||193, hy=headTop(CHARS[ch.id].c,fy);
+    R(g,'#f5f2e8',ch.x-6,hy-13,12,8);R(g,'#f5f2e8',ch.x-1,hy-5,3,2);
+    g.fillStyle='#233038';g.fillRect(ch.x-4,hy-10,2,2);g.fillRect(ch.x-1,hy-10,2,2);g.fillRect(ch.x+2,hy-10,2,2);
+  }
+  $('scenename').textContent='◆ '+sc.label;
+  buildActions();
+  updateTop();
+}
+function updateTop(){
+  $('cluecount').textContent='線索 '+S.clues.size+'/'+TOTAL;
+  const b=$('btnAccuse');
+  if(S.clues.size>=ACCUSE_AT){b.disabled=false;b.classList.add('blink');}
+}
+function buildActions(){
+  const sc=SCENES[S.scene];const a=$('actions');let h='';
+  if(sc.chars.length){
+    h+='<div class="actgroup"><div class="actlabel">💬 交談</div><div class="chips">';
+    for(const ch of sc.chars)h+='<button class="chip talk" onclick="openDlg(\''+ch.id+'\')">'+CHARS[ch.id].name+'</button>';
+    h+='</div></div>';
+  }
+  h+='<div class="actgroup"><div class="actlabel">🔍 調查</div><div class="chips">';
+  for(const o of sc.objs){
+    const seen=o.custom?S.flags['seen_'+o.id]:S.clues.has(o.id);
+    h+='<button class="chip'+(seen?' done':'')+'" onclick="hitObjId(\''+o.id+'\')">'+(seen?'✓ ':'')+o.label+'</button>';
+  }
+  h+='</div></div>';
+  a.innerHTML=h;
+}
+cv.addEventListener('click',e=>{
+  if(!S.started)return;
+  const r=cv.getBoundingClientRect();
+  const x=(e.clientX-r.left)*400/r.width, y=(e.clientY-r.top)*225/r.height;
+  const sc=SCENES[S.scene];
+  for(const ch of sc.chars){
+    const fy=ch.fy||193, hy=headTop(CHARS[ch.id].c,fy);
+    if(x>ch.x-13&&x<ch.x+13&&y>hy-15&&y<fy+3){openDlg(ch.id);return;}
+  }
+  for(const o of sc.objs){
+    if(x>=o.x-3&&x<=o.x+o.w+3&&y>=o.y-8&&y<=o.y+o.h+3){hitObj(o);return;}
+  }
+});
+function hitObjId(id){const o=SCENES[S.scene].objs.find(o=>o.id===id);if(o)hitObj(o);}
+function hitObj(o){
+  if(o.custom){
+    S.flags['seen_'+o.id]=1;
+    const cc=CUSTOM_OBJ[o.custom];
+    showModal(cc.t,cc.x);
+  }else{
+    const isNew=!S.clues.has(o.id);
+    addClue(o.id,false);
+    const cl=CLUES[o.id];
+    showModal((cl.k?'☆ ':'')+cl.t,cl.x+(isNew?'\n\n—— 已記入筆記本 ——':''));
+  }
+  render();
+}
+function addClue(id,silent){
+  if(S.clues.has(id))return false;
+  S.clues.add(id);updateTop();
+  return true;
+}
+
+/* ---- modal ---- */
+function showModal(t,x,html){
+  $('mtitle').textContent=t;
+  if(html){$('mbody').innerHTML=x;}else{$('mbody').textContent=x;}
+  $('modalbg').style.display='flex';
+}
+function closeModal(){$('modalbg').style.display='none';render();}
+function modalOpen(){return $('modalbg').style.display==='flex';}
+$('modalbg').addEventListener('click',e=>{if(e.target===$('modalbg'))closeModal();});
+
+/* ---- dialogue ---- */
+function openDlg(id){
+  curChar=id;
+  const C=CHARS[id];
+  drawPortrait($('portrait'),C.c);
+  $('dlgname').textContent=C.name;
+  $('dlgtitle').textContent=C.title;
+  $('dlgtext').innerHTML=DLG[id].greet.map(l=>'<span class="said">'+l+'</span>').join('');
+  buildTopics();
+  $('dlg').style.display='block';
+  $('dlg').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function buildTopics(){
+  const id=curChar, box=$('topics');let h='';
+  for(const t of DLG[id].topics){
+    if(t.cond&&!t.cond(S))continue;
+    const asked=S.flags['asked_'+id+'_'+t.id];
+    h+='<button class="topic'+(asked?' asked':(t.cond?' newmark':''))+'" onclick="askTopic(\''+t.id+'\')">'+(asked?'· ':'▸ ')+t.label+'</button>';
+  }
+  box.innerHTML=h;
+}
+function askTopic(tid){
+  const id=curChar, t=DLG[id].topics.find(t=>t.id===tid);
+  if(!t)return;
+  S.flags['asked_'+id+'_'+tid]=1;
+  if(t.flag)S.flags[t.flag]=1;
+  let html=t.lines.map(l=>'<span class="said">'+l+'</span>').join('');
+  if(t.clue){
+    const isNew=addClue(t.clue,true);
+    const cl=CLUES[t.clue];
+    html+='<span class="cluetag">'+(cl.k?'☆':'◆')+' 新線索：'+cl.t+(isNew?'':'（已記錄）')+'</span>';
+  }
+  $('dlgtext').innerHTML=html;
+  buildTopics();updateTop();
+}
+function closeDlg(){$('dlg').style.display='none';curChar=null;}
+
+/* ---- notebook ---- */
+const CATS=['案情','現場','物證','證詞','雜項'];
+$('btnNote').onclick=()=>{
+  if(!S.started)return;
+  let h='';
+  for(const cat of CATS){
+    const items=Object.entries(CLUES).filter(([id,c])=>c.cat===cat&&S.clues.has(id));
+    if(!items.length)continue;
+    h+='<div class="nb-cat">『'+cat+'』</div>';
+    for(const [id,c] of items){
+      h+='<div class="nb-item'+(c.k?' keyc':'')+'"><b>'+(c.k?'☆ ':'')+c.t+'</b><p>'+c.x.replace(/\n/g,'<br>')+'</p></div>';
+    }
+  }
+  if(!h)h='<p style="color:var(--dim)">（還沒有任何線索。到各個場景點擊閃爍的 ◆ 標記，或跟同事們聊聊。）</p>';
+  h='<p style="color:var(--dim);font-size:12px">☆ = 關鍵線索　　收集進度 '+S.clues.size+'/'+TOTAL+'（達 '+ACCUSE_AT+' 條可指認兇手）</p>'+h;
+  showModal('📔 調查筆記本',h,true);
+};
+
+/* ---- hints ---- */
+const HINTS=[
+ {done:s=>s.clues.has('scene_body'),txt:'先到「小會議室」檢查遺體位置吧。'},
+ {done:s=>s.clues.has('soup_bowl'),txt:'現場那碗貢丸湯，化驗結果就在細節裡。'},
+ {done:s=>s.clues.has('door_log'),txt:'小會議室門邊的「門禁面板」值得一看。'},
+ {done:s=>s.clues.has('tung_desk'),txt:'辦公區 2 有一張沒人坐的桌位，桌上有東西。'},
+ {done:s=>s.clues.has('witness_lin'),txt:'靠窗辦公區的林怡安，案發當晚就在公司——問她那晚看到了什麼。'},
+ {done:s=>s.clues.has('trash_peanut'),txt:'茶水間的垃圾桶深處，翻一下。'},
+ {done:s=>s.clues.has('fridge_bag'),txt:'打開冷凍庫，看看那些貢丸。'},
+ {done:s=>s.clues.has('epipen_pouch'),txt:'業務辦公區——羅經理的側背包。'},
+ {done:s=>s.clues.has('ledger'),txt:'羅經理的抽屜還沒開過。'},
+ {done:s=>s.clues.has('leak_draft'),txt:'羅經理桌上的文件夾。'},
+ {done:s=>s.clues.has('quote_access'),txt:'拿著外洩調查草稿，去大會議室問孫寧「報價權限」。'},
+ {done:s=>s.clues.has('allergy_known'),txt:'去「嘉常菜」跟老闆娘聊聊羅經理。'},
+ {done:s=>s.clues.has('peanut_buy'),txt:'再問老闆娘：週五晚上來過哪些客人。'},
+ {done:s=>s.clues.has('note_scraps'),txt:'女廁洗手台下方的縫隙。'},
+ {done:s=>s.clues.has('epipen_cabinet'),txt:'大會議室那座高櫃——上面好像有東西。'},
+ {done:s=>s.clues.has('whiteboard_review'),txt:'大會議室白板上的議程，看仔細。'},
+ {done:s=>s.flags.yeh_alibi,txt:'去業務辦公區，問葉詩宣「案發當晚在哪」。'},
+ {done:s=>s.clues.has('concert_date'),txt:'彭筠喬是追星情報網。跟她打聽「追星情報」。'},
+ {done:s=>s.clues.has('yeh_lie'),txt:'帶著演唱會日期的情報，回去質問葉詩宣。'},
+ {done:s=>false,txt:'線索差不多齊了。打開筆記本整理思路，然後——指認兇手。'},
+];
+$('btnHint').onclick=()=>{
+  if(!S.started)return;
+  const h=HINTS.find(h=>!h.done(S));
+  const tip=$('hinttip');
+  tip.textContent='💡 '+h.txt;
+  tip.style.display='block';
+  clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.style.display='none';},7000);
+};
+
+/* ---- accuse ---- */
+const acc={sus:null,method:null,motive:null};
+const METHODS=[
+ {id:'poison',t:'在他常喝的飲料裡下毒'},
+ {id:'shock',t:'趁他不備電擊，偽裝成心臟病發'},
+ {id:'peanut',t:'把大量花生粉揉進冷凍庫的貢丸，誘發過敏性休克——並事先偷走他的急救筆'},
+ {id:'strangle',t:'深夜潛入勒斃，再佈置成意外'},
+];
+const MOTIVES=[
+ {id:'credit',t:'長期被搶業績與功勞，怨恨爆發'},
+ {id:'rumor',t:'為了終結貢丸謠言，守護家業'},
+ {id:'blackmail',t:'遭死者以「報價外洩證據」長期勒索，每月付款——升等審查在即，決定滅口'},
+ {id:'tarot',t:'塔羅牌「高塔」預言的自我實現'},
+];
+$('btnAccuse').onclick=()=>{
+  if(!S.started||S.clues.size<ACCUSE_AT)return;
+  acc.sus=acc.method=acc.motive=null;
+  let h='<p style="color:var(--dim);font-size:13px;line-height:1.8">指認錯誤不會結束遊戲，但會留下嘗試紀錄。想清楚：是誰、怎麼做、為什麼。</p>';
+  h+='<div class="steplabel">STEP 1　兇手是——</div><div class="suspects" id="susgrid">';
+  for(const id of Object.keys(CHARS)){
+    if(id==='boss')continue;
+    h+='<button class="sus" id="sus_'+id+'" onclick="pickSus(\''+id+'\')"><canvas width="66" height="72" id="pc_'+id+'"></canvas>'+CHARS[id].name+'</button>';
+  }
+  h+='</div><div class="steplabel">STEP 2　手法是——</div><div class="optlist">';
+  METHODS.forEach(m=>{h+='<button class="opt" id="m_'+m.id+'" onclick="pickM(\''+m.id+'\')">'+m.t+'</button>';});
+  h+='</div><div class="steplabel">STEP 3　動機是——</div><div class="optlist">';
+  MOTIVES.forEach(m=>{h+='<button class="opt" id="v_'+m.id+'" onclick="pickV(\''+m.id+'\')">'+m.t+'</button>';});
+  h+='</div><div class="center"><button class="abtn red" style="font-size:15px;padding:10px 24px" onclick="submitAcc()">⚖ 提出指控</button></div>';
+  showModal('⚖ 指認兇手',h,true);
+  for(const id of Object.keys(CHARS)){
+    if(id==='boss')continue;
+    const cn=$('pc_'+id);const c2=cn.getContext('2d');c2.imageSmoothingEnabled=false;
+    R(c2,'#152a22',0,0,66,72);
+    c2.save();c2.scale(3,3);drawChar(c2,11,26,{...CHARS[id].c,dh:0});c2.restore();
+  }
+};
+function pickSus(id){acc.sus=id;document.querySelectorAll('.sus').forEach(el=>el.classList.remove('sel'));$('sus_'+id).classList.add('sel');}
+function pickM(id){acc.method=id;METHODS.forEach(m=>$('m_'+m.id).classList.remove('sel'));$('m_'+id).classList.add('sel');}
+function pickV(id){acc.motive=id;MOTIVES.forEach(m=>$('v_'+m.id).classList.remove('sel'));$('v_'+id).classList.add('sel');}
+
+const TRUTH='【真相還原】\n兇手：葉詩宣。\n\n半年前，葉詩宣開始將公司報價外洩給「新視界廣告」換取回扣。\n羅本添循線查出了內鬼——但他沒有上報，而是選擇勒索：\n每月十五號，五萬元。帳本上的「Y」，付了整整七個月。\n\n然後他的胃口變大了：十萬。\n否則，就在葉詩宣的副理升等審查會上，把證據寄到所有人的信箱。\n樓梯間那句「最後一次」，是她最後的警告，也是她聽到的最後通牒。\n\n她記得嘉常菜的那一幕——羅本添誤食花生粉、當場休克、靠急救筆撿回一命。\n她也記得，他加班必偷煮陳資涵家的貢丸湯。\n\n週五：她外帶滷味時多拿了五包花生粉；趁傍晚無人，打開封好的貢丸袋，\n把花生粉細細揉進每顆貢丸的裂縫（陳亭宇看見的那個背影）；\n順手偷走羅本添包裡的急救筆，以及董伊淇放在桌上的門禁卡——\n一張「即將離職、最沒有動機」的卡。\n她還從劉世華的牌組抽走了「高塔」。那是占卜時，她自己抽到的牌。\n\n週日 21:15，羅本添進公司趕簡報，照慣例煮了貢丸湯。\n21:26 存檔，端起碗，邊看邊吃。\n幾分鐘後，過敏發作。他翻遍包包——救命針不在。\n他抓起手機想求救，倒在了 Q3 簡報的循環播放裡。\n\n21:41，葉詩宣用董伊淇的卡進入，確認結果。\n她把冷氣調到 16 度，混淆死亡時間；\n把「高塔」放在乾掉的湯漬上——嫁禍給怪力亂神，也獻給那次占卜；\n搜走羅本添隨身的證據隨身碟，卻漏了抽屜裡的帳本與草稿。\n\n21:45，她快步走向女廁（林怡安看見的那個身影），\n撕碎勒索字條沖進馬桶、丟棄手套；\n急救筆則藏上大會議室的高櫃——那個只有她不必墊腳就搆得到的高度。\n\n隔天早上 9:30，本該是她升上副理的審查會。\n\n「塔倒了，路就通了。」\n——但倒下的塔，砸中的是她自己。';
+
+function submitAcc(){
+  if(!acc.sus||!acc.method||!acc.motive){alert('三個步驟都要選擇。');return;}
+  S.attempts++;
+  const ok=(acc.sus==='yeh'?1:0)+(acc.method==='peanut'?1:0)+(acc.motive==='blackmail'?1:0);
+  closeModal();
+  if(ok===3){
+    endMode='win';
+    $('endtitle').textContent='◆ 真相大白 ◆';
+    $('endbody').textContent=TRUTH+'\n\n（總嘗試次數：'+S.attempts+'　收集線索：'+S.clues.size+'/'+TOTAL+'）\n\n葉詩宣被帶走時，回頭看了一眼大會議室的白板。\n升等審查會，永久取消。';
+    $('endbtn').textContent='▶ 再玩一次';
+  }else{
+    endMode='lose';
+    $('endtitle').textContent='✕ 指控不成立';
+    let msg='';
+    if(acc.sus!=='yeh'){
+      msg=CHARS[acc.sus].name+'的律師當場提出鐵證如山的不在場證明，指控被駁回。\n對方憤怒地表示將保留法律追訴權。\n\n（你被'+CHARS[acc.sus].name+'記在小本本上了。）';
+    }else{
+      msg='你指對了人——但檢察官搖頭：\n「手法或動機的證據鏈不完整。這樣起訴，會被辯方打回來。」\n葉詩宣看著你，眼神毫無波瀾。\n差一點。再想想。';
+    }
+    $('endbody').textContent=msg+'\n\n你的推理有 '+ok+'/3 項成立。\n回到現場，補齊缺口。';
+    $('endbtn').textContent='← 返回調查';
+  }
+  $('ending').style.display='block';
+}
+function endAction(){
+  if(endMode==='win'){location.reload();return;}
+  $('ending').style.display='none';
+}
+
+/* ---- nav / boot ---- */
+(function(){
+  const nb=$('navbar');
+  for(const id of SCENE_ORDER){
+    const b=document.createElement('button');
+    b.className='navbtn';b.id='nav_'+id;b.textContent=SCENES[id].label.replace(/（.*）/,'');
+    b.onclick=()=>{S.scene=id;closeDlg();document.querySelectorAll('.navbtn').forEach(e=>e.classList.remove('active'));b.classList.add('active');render();};
+    nb.appendChild(b);
+  }
+})();
+function startGame(){
+  $('intro').style.display='none';
+  S.started=true;
+  addClue('brief');
+  $('nav_window').classList.add('active');
+  render();
+  setTimeout(()=>{const c=CLUES.brief;showModal('☆ '+c.t,c.x+'\n\n—— 已記入筆記本 ——');},250);
+}
+setInterval(()=>{blinkOn=!blinkOn;if(S.started&&!modalOpen())render();},480);
+$('intro').style.display='block';
+</script>
+</body>
+</html>
